@@ -337,19 +337,19 @@ body.privacy td.dcell{font-weight:700;text-shadow:0 0 7px currentColor}
     🔒 <strong>Modo Privacidad</strong> · Importes en € ocultos · Variaciones % y rentabilidades siempre visibles
   </div>
 
-  <!-- Data refresh bar -->
+  <!-- Data info bar -->
   <div id="data-bar" style="
     display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
     padding:10px 24px;background:var(--card);border-bottom:1px solid var(--border);
     font-size:12px;
   ">
-    <div style="display:flex;align-items:center;gap:10px">
-      <span style="color:var(--muted)">📊 Datos patrimonio:</span>
-      <span id="data-status" style="color:var(--muted)">Cargados desde datos embebidos (JUL'26)</span>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="color:var(--green);font-size:14px">●</span>
+      <span id="data-status" style="color:var(--muted)">Datos embebidos · última actualización: <strong style="color:var(--text2)">JUL'26</strong></span>
     </div>
-    <button class="pbtn" id="btn-refresh-data" style="display:flex;align-items:center;gap:6px;font-size:12px">
-      ↻ Actualizar desde Google Drive
-    </button>
+    <div style="color:var(--muted);font-size:11.5px">
+      💬 Para actualizar con un nuevo mes → pídelo en Claude
+    </div>
   </div>
 
   <div id="content">
@@ -902,100 +902,6 @@ function loadEmbedded(){
   const sH = EMBEDDED_DATA.seriesHip.map((v,i)=>({label:dates[i], val:v||null}));
 
   return {assets, dates, sN, sA, sH};
-}
-
-// ════════════════════════════════════════════════════
-//  GOOGLE DRIVE REFRESH
-// ════════════════════════════════════════════════════
-const DRIVE_FILE_ID = '1pjuIjWw_2KEzvsTICb3tUk44-1sqgzBfHCZ2ChB23_4';
-const DRIVE_EXPORT_URL = `https://docs.google.com/spreadsheets/d/${DRIVE_FILE_ID}/export?format=xlsx&id=${DRIVE_FILE_ID}`;
-
-// CORS proxies tried in order — if one fails, next is attempted
-const CORS_PROXIES = [
-  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-];
-
-async function fetchWithCorsProxy(targetUrl){
-  // Try direct first (works on some hosts), then proxies in order
-  const attempts = [
-    targetUrl,
-    ...CORS_PROXIES.map(fn => fn(targetUrl))
-  ];
-  for(const url of attempts){
-    try {
-      const resp = await fetch(url, {signal: AbortSignal.timeout(15000)});
-      if(resp.ok) return resp;
-    } catch(e){ /* try next */ }
-  }
-  throw new Error('No se pudo conectar con Google Drive (probados 3 métodos). Verifica que el archivo es público.');
-}
-
-async function refreshFromDrive(){
-  const statusEl = $('data-status');
-  const btn = $('btn-refresh-data');
-  btn.disabled = true;
-  btn.textContent = '⏳ Descargando...';
-  statusEl.style.color = 'var(--accent)';
-  statusEl.textContent = 'Conectando con Google Drive...';
-
-  try {
-    const resp = await fetchWithCorsProxy(DRIVE_EXPORT_URL);
-    if(!resp.ok) throw new Error(`HTTP ${resp.status} — verifica que el archivo es público`);
-
-    statusEl.textContent = 'Procesando Excel...';
-    const arrayBuf = await resp.arrayBuffer();
-
-    const wb = XLSX.read(arrayBuf, {type:'array'});
-    const sn = wb.SheetNames.find(n=>n.toUpperCase().includes('TOTAL ACTIVOS'));
-    if(!sn) throw new Error('Pestaña "TOTAL ACTIVOS" no encontrada');
-
-    const ws = wb.Sheets[sn];
-    const raw = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
-    const hdr = raw[3];
-    if(!hdr || hdr[0] !== 'Tipo activo') throw new Error('Fila 4 inesperada (col A debe ser "Tipo activo")');
-
-    const dates = [];
-    for(let c=3; c<hdr.length; c+=2){
-      const lbl = hdr[c];
-      if(lbl && lbl !== '%' && typeof lbl === 'string') dates.push({col:c, label:lbl});
-    }
-    if(!dates.length) throw new Error('No se encontraron columnas de fecha en fila 4');
-
-    const assets = [];
-    for(let r=4; r<=40; r++){
-      const row = raw[r];
-      if(!row || (!row[0]&&!row[1]&&!row[2])) continue;
-      assets.push({
-        tipo: row[0], dep: row[1], tit: row[2],
-        series: dates.map(({col})=>{ const v=row[col]; return (v&&v!==0)?v:null; })
-      });
-    }
-
-    const rA=raw[41]||[], rH=raw[43]||[], rN=raw[46]||[];
-
-    // Update EMBEDDED_DATA in memory — build() reads from it
-    EMBEDDED_DATA.dates         = dates.map(d=>d.label);
-    EMBEDDED_DATA.assets        = assets;
-    EMBEDDED_DATA.seriesNeto    = dates.map(({col})=>rN[col]||null);
-    EMBEDDED_DATA.seriesActivos = dates.map(({col})=>rA[col]||null);
-    EMBEDDED_DATA.seriesHip     = dates.map(({col})=>rH[col]||null);
-
-    build(); // full rebuild with new data
-
-    const lastDate = EMBEDDED_DATA.dates[EMBEDDED_DATA.dates.length-1];
-    const now = new Date().toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-    statusEl.textContent = `✓ Actualizado · ${EMBEDDED_DATA.dates.length} períodos hasta ${lastDate} · ${now}`;
-    statusEl.style.color = 'var(--green)';
-
-  } catch(e) {
-    statusEl.textContent = `✗ ${e.message}`;
-    statusEl.style.color = 'var(--red)';
-    console.error('Drive refresh failed:', e);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '↻ Actualizar desde Google Drive';
-  }
 }
 
 // ════════════════════════════════════════════════════
@@ -1919,14 +1825,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   initSectionPeriodBtns('cri', DATA, latestIdx(DATA?.sN||[]));
 
   // Drive data refresh
-  $('btn-refresh-data').addEventListener('click', ()=>{
-    refreshFromDrive().catch(e=>{
-      console.error('Refresh error:', e);
-      $('data-status').textContent = `✗ Error inesperado: ${e.message}`;
-      $('data-status').style.color = 'var(--red)';
-    });
-  });
-
   // Mobile theme buttons (mirror sidebar)
   document.querySelectorAll('.mob-theme-btn[data-mob-theme]').forEach(btn=>{
     btn.addEventListener('click',()=>{
