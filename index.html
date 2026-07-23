@@ -243,9 +243,9 @@ body.privacy td.dcell{font-weight:700;text-shadow:0 0 7px currentColor}
 .ticker-metric-val{font-family:'SF Mono','Courier New',monospace;font-size:16px;font-weight:800}
 
 /* ═══ EVENT MARKERS legend ═══ */
-.event-legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--grid-line2)}
-.event-chip{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
-.event-dot{width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0}
+.event-legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid var(--grid-line2)}
+.event-chip{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--text2);line-height:1.3}
+.event-chip strong{color:var(--text)}
 
 /* ═══ RESPONSIVE MOBILE ═══ */
 @media(max-width:1100px) and (min-width:769px){
@@ -667,7 +667,7 @@ body.privacy td.dcell{font-weight:700;text-shadow:0 0 7px currentColor}
   font-size:10px;color:var(--muted);
   pointer-events:none;
 ">
-  <span style="font-family:'SF Mono','Courier New',monospace;font-weight:600">v1.2 · jul 2026</span>
+  <span style="font-family:'SF Mono','Courier New',monospace;font-weight:600">v1.3 · jul 2026</span>
 </div>
 </div><!-- #app -->
 
@@ -811,6 +811,17 @@ async function refreshLivePrices(){
 // ════════════════════════════════════════════════════
 //  GLOBAL MARKET EVENTS (for evolution chart dip annotations)
 // ════════════════════════════════════════════════════
+const EVENT_COLORS = [
+  '#EF4444', // rojo       — COVID
+  '#F97316', // naranja    — Ucrania
+  '#EAB308', // amarillo   — Inflación/tipos
+  '#22C55E', // verde      — Crisis bancaria
+  '#3B82F6', // azul       — Israel-Gaza
+  '#8B5CF6', // violeta    — Carry trade JPY
+  '#EC4899', // rosa       — Aranceles Trump
+  '#14B8A6', // teal       — Conflicto Irán
+];
+
 const MARKET_EVENTS = [
   {match:['ENE','19'], yearMonth:[2019,1], label:'—', skip:true},
   {yearMonth:[2020,3], label:'COVID-19', detail:'Crash bursátil por inicio de la pandemia'},
@@ -1016,51 +1027,61 @@ function build(){
 function findEventAnnotations(labels){
   if(!showEvents) return {};
   const annotations = {};
-  let n = 0;
-  // 4 stagger levels anchored near top — labels don't overlap chart data
-  const yLevels = [4, 26, 48, 70];
 
-  for(const ev of MARKET_EVENTS){
+  MARKET_EVENTS.forEach((ev, idx)=>{
     const [ey, em] = ev.yearMonth;
     let bestIdx = -1, bestDiff = Infinity;
     labels.forEach((lbl, i)=>{
-      const d = parseLabel(lbl);
-      if(!d) return;
+      const d = parseLabel(lbl); if(!d) return;
       const diff = Math.abs((d.getFullYear()-ey)*12 + (d.getMonth()-(em-1)));
       if(diff < bestDiff){ bestDiff = diff; bestIdx = i; }
     });
-    if(bestIdx>=0 && bestDiff<=2){
-      annotations['ev'+n] = {
-        type:'line', xMin:bestIdx, xMax:bestIdx,
-        borderColor: hexToRgba(getCssVar('--red'), 0.45),
-        borderWidth:1.5, borderDash:[4,3],
-        label:{
-          display:true,
-          content:ev.label,
-          position:'start',
-          backgroundColor: getCssVar('--red'),
-          color:'#fff',
-          font:{size:9, weight:'700'},
-          padding:{x:5, y:3},
-          borderRadius:4,
-          rotation:-90,
-          yAdjust: yLevels[n % yLevels.length],
-          z: 10,
-        }
-      };
-      n++;
-    }
-  }
+    if(bestIdx<0 || bestDiff>2) return;
+
+    const color = EVENT_COLORS[idx % EVENT_COLORS.length];
+    const num   = String(idx+1);
+
+    // Vertical dashed line — subtle, no label
+    annotations['evline'+idx] = {
+      type:'line', xMin:bestIdx, xMax:bestIdx,
+      borderColor: color+'88',   // semi-transparent
+      borderWidth:1.5, borderDash:[4,3],
+    };
+
+    // Numbered badge — label annotation pinned near top of chart
+    annotations['evdot'+idx] = {
+      type:'label',
+      xValue: bestIdx,
+      yAdjust: -999,  // large negative = push to top of chart area
+      backgroundColor: color,
+      borderColor: '#fff',
+      borderWidth: 1.5,
+      borderRadius: 10,
+      content: [num],
+      color:'#fff',
+      font:{size:9, weight:'800'},
+      padding:{x:4, y:3},
+      position:'start',
+    };
+  });
   return annotations;
 }
+
 function renderEventLegend(){
   const leg = $('event-legend');
   if(!showEvents){ leg.style.display='none'; return; }
   leg.style.display='flex';
-  leg.innerHTML = MARKET_EVENTS.map(e=>
-    `<div class="event-chip"><div class="event-dot"></div>${e.label} — ${e.detail}</div>`
-  ).join('');
+  leg.innerHTML = MARKET_EVENTS.map((e,idx)=>{
+    const color = EVENT_COLORS[idx % EVENT_COLORS.length];
+    return `<div class="event-chip">
+      <div style="width:18px;height:18px;border-radius:50%;background:${color};
+        display:flex;align-items:center;justify-content:center;
+        color:#fff;font-size:9px;font-weight:800;flex-shrink:0">${idx+1}</div>
+      <span><strong>${e.label}</strong> — ${e.detail}</span>
+    </div>`;
+  }).join('');
 }
+
 
 function makeEvolDatasets(fN, fA, withA){
   const base=fN[0]?.val||1;
