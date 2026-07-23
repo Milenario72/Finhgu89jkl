@@ -255,46 +255,84 @@ body.privacy td.dcell{font-weight:700;text-shadow:0 0 7px currentColor}
 @media(max-width:768px){
   #sidebar{display:none}
   #mob-nav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--card);border-top:1px solid var(--border);padding:6px 4px 14px;flex-wrap:wrap}
-  .mob-item{flex:1;min-width:14%;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;color:var(--muted);font-size:9px;font-weight:600}
+  .mob-item{flex:1;min-width:14%;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;color:var(--muted);font-size:10px;font-weight:600}
   .mob-item.active{color:var(--green)}
-  .mob-ico{font-size:16px}
+  .mob-ico{font-size:18px}
   #mob-controls{display:flex;align-items:center;justify-content:space-between;width:100%;padding:6px 12px 2px;border-top:1px solid var(--border);margin-top:4px}
   .mob-theme-toggle{display:flex;background:var(--card2);border-radius:6px;padding:2px;gap:2px}
-  .mob-theme-btn{padding:4px 8px;border-radius:5px;cursor:pointer;font-size:10px;font-weight:600;color:var(--muted);border:none;background:none}
+  .mob-theme-btn{padding:5px 10px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:600;color:var(--muted);border:none;background:none}
   .mob-theme-btn.active{background:var(--card);color:var(--green)}
-  .mob-priv-btn{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:10px;font-weight:600;color:var(--muted);border:none;background:none;padding:4px 8px;border-radius:6px;border:1px solid var(--border)}
+  .mob-priv-btn{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;font-weight:600;color:var(--muted);border:none;background:none;padding:5px 10px;border-radius:6px;border:1px solid var(--border)}
   .mob-priv-btn.on{color:var(--green);border-color:var(--green);background:rgba(0,212,138,.08)}
-  #main{padding-bottom:100px}
-  /* KPIs */
-  .kpi-grid{grid-template-columns:repeat(2,1fr)}
-  .kpi-val{font-size:20px}
-  .kpi-badge{font-size:14px;padding:3px 8px}
-  .kpi-lbl{font-size:10px}
-  .kpi-sub{font-size:11px}
-  /* Spark / rentabilidad cards — clave: layout vertical, fuentes reducidas */
-  .g3{grid-template-columns:repeat(2,1fr)}
-  .spark-card{padding:13px}
-  .spark-eur{font-size:15px !important}
-  .spark-cat{font-size:10px}
-  .spark-badge{font-size:12px !important;padding:3px 7px !important}
-  .spark-head{flex-direction:column;gap:6px;align-items:flex-start}
-  .spark-head > div:last-child{align-self:flex-start}
-  /* Acciones ticker cards */
-  .ticker-grid{grid-template-columns:repeat(2,1fr)}
-  .ticker-val{font-size:15px}
-  .ticker-sym{font-size:12px}
-  .ticker-metric-val{font-size:12px}
-  .ticker-card{padding:13px}
-  /* Layouts */
+  #main{padding-bottom:110px}
+  #content{padding:16px}
+
+  /* ── TIPOGRAFÍA GLOBAL MÓVIL (presbicia) ── */
+  body{font-size:15px}
+  .sec-title{font-size:20px;margin-bottom:16px}
+  .sep{font-size:15px}
+
+  /* ── KPIs RESUMEN ── */
+  .kpi-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .kpi{padding:16px}
+  .kpi-val{font-size:22px}
+  .kpi-badge{font-size:16px;padding:5px 10px}
+  .kpi-lbl{font-size:11px;margin-bottom:8px}
+  .kpi-sub{font-size:12px}
+
+  /* ── LAYOUTS ── */
   .g2,.g11{grid-template-columns:1fr}
-  .g6{grid-template-columns:repeat(3,1fr)}
-  .sec-title{font-size:16px}
-  .tbl-wrap{font-size:11px}
-  /* En pantallas muy pequeñas (<375px) una sola columna para sparks */
+  .g3{grid-template-columns:1fr}        /* 1 col en móvil para sparks */
+  .g6{grid-template-columns:repeat(2,1fr)}
+
+  /* ── SPARK / RENTABILIDAD CARDS ── */
+  .spark-card{padding:16px}
+  .spark-eur{font-size:19px !important}
+  .spark-cat{font-size:12px;margin-bottom:4px}
+  .spark-badge{font-size:15px !important;padding:5px 10px !important}
+
+  /* ── ACCIONES: TICKER CARDS ── */
+  /* 1 columna, layout vertical claro, sin aplastamiento */
+  .ticker-grid{grid-template-columns:1fr !important}
+  .ticker-card{padding:18px}
+  .ticker-sym{font-size:16px}
+  .ticker-name{font-size:13px}
+  .ticker-val{font-size:22px}
+  .ticker-metric-lbl{font-size:12px;margin-bottom:4px}
+  .ticker-metric-val{font-size:16px !important}
+  /* ticker-row: en móvil apilamos las dos métricas verticalmente */
+  .ticker-row{
+    flex-direction:column;
+    align-items:stretch;
+    gap:12px;
+  }
+  .ticker-metric{text-align:left !important}
+  .ticker-metric + .ticker-metric{
+    padding-top:12px;
+    border-top:1px solid var(--grid-line2);
+  }
+
+  /* ── TABLAS ── */
+  .tbl-wrap{font-size:12px}
+  thead th{padding:10px 10px;font-size:10px}
+  tbody td{padding:10px 10px}
+
+  /* ── CHART ACTIONS / BOTONES ── */
+  .pbtn{font-size:12px;padding:6px 12px}
+  .chart-actions{gap:6px}
+
+  /* ── DONUT LEGEND ── */
+  .leg-eur{font-size:14px}
+  .leg-pct{font-size:12px}
+  .leg-name{font-size:13px}
+
+  /* ── DET-ROW (Pensiones/Cripto) ── */
+  .det-name{font-size:15px}
+  .det-sub{font-size:13px}
 }
 @media(max-width:374px){
   .g3{grid-template-columns:1fr}
-  .ticker-grid{grid-template-columns:1fr}
+  .kpi-grid{grid-template-columns:1fr}
 }
 @media(min-width:769px){#mob-nav{display:none}}
 </style>
@@ -1679,12 +1717,12 @@ function buildAcciones(){
         <div class="ticker-row">
           <div class="ticker-metric">
             <div class="ticker-metric-lbl">Rentabilidad diaria</div>
-            <div class="ticker-metric-val psub ${ddD.cls}">${(t.curValueEur-prevVal>=0?'+':'')}${eur(t.curValueEur-prevVal)}</div>
+            <div class="ticker-metric-val psub ${ddD.cls}" style="white-space:nowrap">${(t.curValueEur-prevVal>=0?'+':'')}${eur(t.curValueEur-prevVal)}</div>
           </div>
           <div class="ticker-metric" style="text-align:right">
             <div class="ticker-metric-lbl">Rentabilidad desde inicio</div>
-            <div class="ticker-metric-val phigh ${dhD.cls}">${dhD.txt}</div>
-            <div class="ticker-metric-val pval ${dhD.cls}" style="font-size:12px;margin-top:2px">${(gainAbs>=0?'+':'')}${eur(gainAbs)}</div>
+            <div class="ticker-metric-val phigh ${dhD.cls}" style="white-space:nowrap">${dhD.txt}</div>
+            <div class="ticker-metric-val pval ${dhD.cls}" style="font-size:13px;margin-top:3px;white-space:nowrap">${(gainAbs>=0?'+':'')}${eur(gainAbs)}</div>
           </div>
         </div>
       </div>`;
