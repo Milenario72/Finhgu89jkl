@@ -668,7 +668,7 @@ body.privacy td.dcell{font-weight:700;text-shadow:0 0 7px currentColor}
   font-size:10.5px;color:var(--muted);
 ">
   <span>📊 Dashboard Patrimonio</span>
-  <span style="font-family:'SF Mono','Courier New',monospace;font-weight:600;color:var(--text2)">v1.0 · jul 2026</span>
+  <span style="font-family:'SF Mono','Courier New',monospace;font-weight:600;color:var(--text2)">v1.1 · jul 2026</span>
 </div>
 </div><!-- #app -->
 
@@ -1702,7 +1702,11 @@ function buildAcciones(){
 
   // Ticker cards
   const tg = $('ticker-grid'); tg.innerHTML='';
-  tickers.sort((a,b)=>b.curValueEur-a.curValueEur);
+  tickers.sort((a,b)=>{
+    const rA = (a.curValueEur-a.costEur)/a.costEur;
+    const rB = (b.curValueEur-b.costEur)/b.costEur;
+    return rB - rA;
+  });
   for(const t of tickers){
     const cur = STOCK_CURRENT[t.ticker];
     const prevVal = t.curValueEur * (cur.prevClose/cur.price);
@@ -1740,9 +1744,16 @@ function buildAcciones(){
       </div>`;
   }
 
-  // Lots table
+  // Build ticker order by historical return (same as cards)
+  const tickerOrder = tickers.map(t=>t.ticker);
+
   const tb = $('tb-acciones'); tb.innerHTML='';
-  const sortedLots = [...allLots].sort((a,b)=>a.ticker.localeCompare(b.ticker)||new Date(a.date)-new Date(b.date));
+  const sortedLots = [...allLots].sort((a,b)=>{
+    const oA = tickerOrder.indexOf(a.ticker);
+    const oB = tickerOrder.indexOf(b.ticker);
+    if(oA !== oB) return oA - oB;
+    return new Date(a.date) - new Date(b.date); // within same ticker: chronological
+  });
   let lastTicker = null;
   for(const l of sortedLots){
     const cur = STOCK_CURRENT[l.ticker];
