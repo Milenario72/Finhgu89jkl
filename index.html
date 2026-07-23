@@ -86,7 +86,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);
 .theme-btn.active{background:var(--card);color:var(--green);box-shadow:var(--shadow)}
 
 /* ═══ MAIN ═══ */
-#main{flex:1;overflow-y:auto;display:flex;flex-direction:column;min-width:0}
+#main{flex:1;overflow-y:auto;display:flex;flex-direction:column;min-width:0;padding-bottom:28px}
 
 /* ═══ BANNER ═══ */
 #priv-banner{
@@ -335,6 +335,7 @@ body.privacy td.dcell{font-weight:700;text-shadow:0 0 7px currentColor}
   .kpi-grid{grid-template-columns:1fr}
 }
 @media(min-width:769px){#mob-nav{display:none}}
+@media(max-width:768px){#version-bar{display:none}}
 </style>
 </head>
 <body>
@@ -658,6 +659,17 @@ body.privacy td.dcell{font-weight:700;text-shadow:0 0 7px currentColor}
 
   </div><!-- #content -->
 </div><!-- #main -->
+
+<!-- VERSION FOOTER -->
+<div id="version-bar" style="
+  position:fixed;bottom:0;left:0;right:0;z-index:200;
+  background:var(--card);border-top:1px solid var(--border);
+  padding:4px 16px;display:flex;align-items:center;justify-content:space-between;
+  font-size:10.5px;color:var(--muted);
+">
+  <span>📊 Dashboard Patrimonio</span>
+  <span style="font-family:'SF Mono','Courier New',monospace;font-weight:600;color:var(--text2)">v1.0 · jul 2026</span>
+</div>
 </div><!-- #app -->
 
 <!-- MOBILE NAV -->
