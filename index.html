@@ -662,13 +662,12 @@ body.privacy td.dcell{font-weight:700;text-shadow:0 0 7px currentColor}
 
 <!-- VERSION FOOTER -->
 <div id="version-bar" style="
-  position:fixed;bottom:0;left:0;right:0;z-index:200;
-  background:var(--card);border-top:1px solid var(--border);
-  padding:4px 16px;display:flex;align-items:center;justify-content:space-between;
-  font-size:10.5px;color:var(--muted);
+  position:fixed;bottom:0;right:0;z-index:200;
+  padding:3px 12px;
+  font-size:10px;color:var(--muted);
+  pointer-events:none;
 ">
-  <span>📊 Dashboard Patrimonio</span>
-  <span style="font-family:'SF Mono','Courier New',monospace;font-weight:600;color:var(--text2)">v1.1 · jul 2026</span>
+  <span style="font-family:'SF Mono','Courier New',monospace;font-weight:600">v1.2 · jul 2026</span>
 </div>
 </div><!-- #app -->
 
@@ -1018,9 +1017,11 @@ function findEventAnnotations(labels){
   if(!showEvents) return {};
   const annotations = {};
   let n = 0;
+  // 4 stagger levels anchored near top — labels don't overlap chart data
+  const yLevels = [4, 26, 48, 70];
+
   for(const ev of MARKET_EVENTS){
     const [ey, em] = ev.yearMonth;
-    // find closest label index matching that year/month
     let bestIdx = -1, bestDiff = Infinity;
     labels.forEach((lbl, i)=>{
       const d = parseLabel(lbl);
@@ -1029,22 +1030,29 @@ function findEventAnnotations(labels){
       if(diff < bestDiff){ bestDiff = diff; bestIdx = i; }
     });
     if(bestIdx>=0 && bestDiff<=2){
-      n++;
       annotations['ev'+n] = {
         type:'line', xMin:bestIdx, xMax:bestIdx,
-        borderColor: getCssVar('--red'), borderWidth:1.5, borderDash:[4,3],
+        borderColor: hexToRgba(getCssVar('--red'), 0.45),
+        borderWidth:1.5, borderDash:[4,3],
         label:{
-          display:true, content:ev.label, position:'start',
-          backgroundColor: getCssVar('--red'), color:'#fff',
-          font:{size:9,weight:'600'}, padding:{x:5,y:2}, borderRadius:4,
-          rotation:0, yAdjust: (n%2===0)? -8 : 8
+          display:true,
+          content:ev.label,
+          position:'start',
+          backgroundColor: getCssVar('--red'),
+          color:'#fff',
+          font:{size:9, weight:'700'},
+          padding:{x:5, y:3},
+          borderRadius:4,
+          rotation:-90,
+          yAdjust: yLevels[n % yLevels.length],
+          z: 10,
         }
       };
+      n++;
     }
   }
   return annotations;
 }
-
 function renderEventLegend(){
   const leg = $('event-legend');
   if(!showEvents){ leg.style.display='none'; return; }
